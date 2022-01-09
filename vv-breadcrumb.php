@@ -26,7 +26,7 @@ function link_in_breadcrumb( $name, $positionIndex, $link ) {
 function list_in_breadcrumb( $name, $positionIndex, $link = false, $class = false ) {
 	$list = '<li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem"';
 
-	$list .= $class ? 'class="vp-breadcrumb__item ' . $class . '">' : 'class="vp-breadcrumb__item">';
+	$list .= $class ? 'class="vv-breadcrumb__item ' . $class . '">' : 'class="vv-breadcrumb__item">';
 
 	$list .= $link ? link_in_breadcrumb( $name, $positionIndex, $link ) : name_in_breadcrumb( $name, $positionIndex );
 
