@@ -7,7 +7,7 @@
  * Author URI:  https://valik.pavlenko.org.ua/
  * Version:     1.3.0
  * License: GPLv2 or later
- * Text Domain: breadcrumbtoseo
+ * Text Domain: xxBreadcrumbToSEO
  *
  * Requires PHP: 7.4
  *
