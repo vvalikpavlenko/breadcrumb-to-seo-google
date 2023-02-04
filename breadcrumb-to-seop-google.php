@@ -3,11 +3,11 @@
  * Plugin Name: Breadcrumb to SEO Google
  * Description: Plugin for Breadcrumbs, with SEO attributes
  * Plugin URI:  https://github.com/vvalikpavlenko/BreadcrumbToSEOGoogle
- * Author:      Valik Pavlenko
+ * Author:      Valentyn Pavlenko
  * Author URI:  https://valik.pavlenko.org.ua/
  * Version:     1.3.0
  * License: GPLv2 or later
- * Text Domain: xxBreadcrumbToSEO
+ * Text Domain: vvBreadcrumbToSEO
  *
  * Requires PHP: 7.4
  *
@@ -36,15 +36,152 @@ defined('ABSPATH') || exit;
 
 class_exists('VVBreadcrumb') || exit;
 
+if (!defined('VVBREADCRUMB_VER')) {
+  define('VVBREADCRUMB_VER', '1.3.0');
+}
+
+// Define Directory PATH
+if (!defined('VVBREADCRUMB_DIR_PATH')) {
+  define('VVBREADCRUMB_DIR_PATH', plugin_dir_path(__FILE__));
+}
+
+
 class VVBreadcrumb
 {
+  public $icon_home = "<svg width='24' viewBox='0 0 24 24' fill='currentColor' xmlns='http://www.w3.org/2000/svg'><path d='M11.9998 3.26318L1.26318 12.6253H4.48421V20.9474H9.85276V14.706H14.1473V20.9474H19.5158V12.6253H22.7369L11.9998 3.26318Z'/></svg>";
 
   public function register()
   {
     add_action('vv_breadcrumb', [$this, 'get_breadcrumb']);
     add_shortcode('vv_breadcrumb', [$this, 'get_breadcrumb']);
+
+    add_filter('plugin_action_links_' . plugin_basename(__FILE__), [$this, 'add_plugin_setting_link']);
+
+    // Add menu in admin 'admin point'
+    add_action('admin_menu', [$this, 'add_custom_menu']);
+
+    add_action('admin_init', [$this, 'setting_init']);
+    add_action('wp_head', [$this, 'get_style_front']);
   }
 
+  public function add_custom_menu()
+  {
+    add_menu_page(
+      esc_html__('Breadcrumb', 'xProductSettings'),
+      esc_html__('Breadcrumb', 'xProductSettings'),
+      'manage_options',
+      'setting_breadcrumb_to_seo',
+      [$this, 'setting_breadcrumb_page'],
+      'dashicons-building',
+      12
+    );
+  }
+
+  public function add_plugin_setting_link($links)
+  {
+    $url = esc_url(add_query_arg(
+      'page',
+      'setting_breadcrumb_to_seo',
+      get_admin_url() . 'admin.php'
+    ));
+    $settings_link = "<a href='$url'>" . __('Settings') . '</a>';
+    array_push(
+      $links,
+      $settings_link
+    );
+    return $links;
+  }
+
+  public function setting_breadcrumb_page()
+  {
+    require_once VVBREADCRUMB_DIR_PATH . 'admin/admin.php';
+  }
+
+  public function setting_init()
+  {
+    $id_options = 'breadcrumb_setting_options';
+    $page = 'setting_breadcrumb_to_seo';
+    register_setting('breadcrumb_setting', $id_options);
+
+    add_settings_section(
+      $id_options,
+      esc_html__('Settings', 'xProductSettings'),
+      [$this, 'settings_section_html'],
+      $page
+    );
+
+    add_settings_field(
+      'separator_navigation',
+      esc_html__('Separator in navigation chains', 'vvBreadcrumbToSEO'),
+      [$this, 'get_field_html'],
+      $page,
+      $id_options,
+      [
+        'type'         => 'text',
+        'name'         => 'separator_navigation',
+        'section'      => $id_options,
+        'defaultValue' => '»'
+      ]
+    );
+
+    add_settings_field(
+      'styles_class',
+      esc_html__('Add class in block', 'vvBreadcrumbToSEO'),
+      [$this, 'get_field_html'],
+      $page,
+      $id_options,
+      [
+        'type'    => 'text',
+        'name'    => 'styles_class',
+        'section' => $id_options
+      ]
+    );
+
+    add_settings_field(
+      'type_page_home',
+      esc_html__('Type text page home', 'vvBreadcrumbToSEO'),
+      [$this, 'get_field_html'],
+      $page,
+      $id_options,
+      [
+        'type'    => 'select',
+        'name'    => 'type_page_home',
+        'section' => $id_options,
+        'options' => [
+          [
+            'value' => 'home',
+            'label' => esc_html__('Name of the site', 'vvBreadcrumbToSEO')
+          ],
+          [
+            'value' => 'text',
+            'label' => esc_html__('Text', 'vvBreadcrumbToSEO')
+          ],
+          [
+            'value' => 'icon',
+            'label' => esc_html__('Icon home', 'vvBreadcrumbToSEO')
+          ]
+        ]
+      ]
+    );
+
+    add_settings_field(
+      'title_home',
+      esc_html__('Title home', 'vvBreadcrumbToSEO'),
+      [$this, 'get_field_html'],
+      $page,
+      $id_options,
+      [
+        'type'    => 'text',
+        'name'    => 'title_home',
+        'section' => $id_options
+      ]
+    );
+  }
+
+  public function settings_section_html()
+  {
+    echo esc_html__('Global settings', 'vvBreadcrumbToSEO');
+  }
 
   public function add_name($name, $positionIndex)
   {
@@ -61,7 +198,7 @@ class VVBreadcrumb
 
   public function add_list($name, $positionIndex, $link = false, $class = false)
   {
-    $list = '<li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem"';
+    $list = '<li itemprop="itemListElement" class="vp-breadcrumb__item" itemscope itemtype="https://schema.org/ListItem"';
 
     $list .= $class ? 'class="vv-breadcrumb__item ' . $class . '">' : 'class="vv-breadcrumb__item">';
 
@@ -78,15 +215,24 @@ class VVBreadcrumb
     // Get text domain for translations
     $theme = wp_get_theme();
     $text_domain = $theme->get('TextDomain');
-
+    $options = get_option('breadcrumb_setting_options');
+    $type_page_home = $options['type_page_home'];
     // Open list
-    $breadcrumb = '<ul itemscope itemtype="https://schema.org/BreadcrumbList" id="breadcrumb" class="vv-breadcrumb">';
-
+    $breadcrumb = '<ul itemscope itemtype="https://schema.org/BreadcrumbList" id="breadcrumb" class="vp-breadcrumb">';
+    $home_name = get_bloginfo('name');
+    switch ($type_page_home) {
+      case 'icon':
+        $home_name = $this->icon_home;
+        break;
+      case 'text':
+        $home_name = $options['title_home'];
+        break;
+    }
     // Front page
     if (is_front_page()) {
-      $breadcrumb .= $this->add_list(get_bloginfo('name'), $positionIndex);
+      $breadcrumb .= $this->add_list($home_name, $positionIndex);
     } else {
-      $breadcrumb .= $this->add_list(get_bloginfo('name'), $positionIndex, home_url());
+      $breadcrumb .= $this->add_list($home_name, $positionIndex, home_url());
     }
     $positionIndex++;
 
@@ -276,6 +422,62 @@ class VVBreadcrumb
 
     // Ouput
     echo $breadcrumb;
+  }
+
+  public function get_style_front()
+  {
+    require_once VVBREADCRUMB_DIR_PATH . 'front/style.php';
+  }
+
+  public function get_field_html($args)
+  {
+    $options = get_option($args['section']);
+    if ($args['type'] == 'checkbox') {
+      ?>
+      <input
+        type="checkbox"
+        <?php if ($args['required']) echo 'required' ?>
+        id="<?php echo $args['name']; ?>"
+        name="<?php echo "{$args['section']}[{$args['name']}]"; ?>"
+        placeholder="<?php echo $args['placeholder']; ?>"
+        value="<?php echo $args['value']; ?>"
+        <?php echo checked($args['value'], $options[$args['name']], false); ?>
+      />
+      <?php
+    } elseif ($args['type'] == 'select') {
+      ?>
+      <select
+        <?php if ($args['required']) echo 'required' ?>
+        name="<?php echo "{$args['section']}[{$args['name']}]"; ?>"
+        id="<?php echo $args['name']; ?>"
+        placeholder="<?php echo $args['placeholder']; ?>"
+        value="<?php echo $options[$args['name']]; ?>"
+      >
+        <?php
+        foreach ($args['options'] as $item) {
+          $selected = $item['value'] === $options[$args['name']] ? 'selected="selected"' : '';
+          echo "<option value='{$item['value']}' " . $selected . ">{$item['label']}</option>";
+        }
+        ?>
+      </select>
+      <?php
+    } else {
+      $value = $options[$args['name']];
+      if ($args['required']) {
+        $value = $value ? $value : $args['defaultValue'];
+      }
+      ?>
+      <input
+        <?php if ($args['required']) echo 'required' ?>
+        type="<?php echo $args['type']; ?>"
+        id="<?php echo $args['тфьу']; ?>"
+        name="<?php echo "{$args['section']}[{$args['name']}]"; ?>"
+        placeholder="<?php echo $args['placeholder']; ?>"
+        value="<?php echo $value; ?>"
+        <?php if ($args['min']) echo 'min="' . $args['min'] . '"'; ?>
+      />
+      <?php
+    }
   }
 }
 
