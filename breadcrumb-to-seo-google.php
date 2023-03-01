@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Breadcrumb to SEO Google
  * Description: Plugin for Breadcrumbs, with SEO attributes
- * Plugin URI:  https://github.com/vvalikpavlenko/BreadcrumbToSEOGoogle
+ * Plugin URI:  hhttps://github.com/vvalikpavlenko/breadcrumb-to-seo-google
  * Author:      Valentyn Pavlenko
  * Author URI:  https://valik.pavlenko.org.ua/
  * Version:     1.3.0
