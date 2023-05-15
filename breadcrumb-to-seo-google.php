@@ -405,7 +405,7 @@ class VVBreadcrumb
 
             foreach ($cpt_terms as $cpt_term) {
               if (!$output) {
-                $breadcrumb .= $this->add_list($cpt_term->name, $positionIndex++, get_term_link($cpt_term->name, $cpt_taxes[0]));
+                $breadcrumb .= $this->add_list($cpt_term->name, $positionIndex++, get_term_link($cpt_term->));
                 $output = true;
               }
             }
