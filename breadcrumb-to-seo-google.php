@@ -5,10 +5,9 @@
  * Plugin URI:  hhttps://github.com/vvalikpavlenko/breadcrumb-to-seo-google
  * Author:      Valentyn Pavlenko
  * Author URI:  https://valik.pavlenko.org.ua/
- * Version:     1.3.0
+ * Version:     1.3.1
  * License: GPLv2 or later
  * Text Domain: vvBreadcrumbToSEO
- *
  * Requires PHP: 7.4
  *
  * @package BreadcrumbToSEOGoogle
@@ -37,7 +36,7 @@ defined('ABSPATH') || exit;
 class_exists('VVBreadcrumb') || exit;
 
 if (!defined('VVBREADCRUMB_VER')) {
-  define('VVBREADCRUMB_VER', '1.3.0');
+  define('VVBREADCRUMB_VER', '1.3.1');
 }
 
 // Define Directory PATH
@@ -405,7 +404,7 @@ class VVBreadcrumb
 
             foreach ($cpt_terms as $cpt_term) {
               if (!$output) {
-                $breadcrumb .= $this->add_list($cpt_term->name, $positionIndex++, get_term_link($cpt_term->));
+                $breadcrumb .= $this->add_list($cpt_term->name, $positionIndex++, get_term_link($cpt_term->term_taxonomy_id));
                 $output = true;
               }
             }
@@ -434,25 +433,17 @@ class VVBreadcrumb
     $options = get_option($args['section']);
     if ($args['type'] == 'checkbox') {
       ?>
-      <input
-        type="checkbox"
-        <?php if ($args['required']) echo 'required' ?>
-        id="<?php echo $args['name']; ?>"
-        name="<?php echo "{$args['section']}[{$args['name']}]"; ?>"
-        placeholder="<?php echo $args['placeholder']; ?>"
-        value="<?php echo $args['value']; ?>"
-        <?php echo checked($args['value'], $options[$args['name']], false); ?>
-      />
+      <input type="checkbox" <?php if ($args['required']) echo 'required' ?> id="<?php echo $args['name']; ?>"
+             name="<?php echo "{$args['section']}[{$args['name']}]"; ?>"
+             placeholder="<?php echo $args['placeholder']; ?>"
+             value="<?php echo $args['value']; ?>" <?php echo checked($args['value'], $options[$args['name']], false); ?> />
       <?php
     } elseif ($args['type'] == 'select') {
       ?>
-      <select
-        <?php if ($args['required']) echo 'required' ?>
+      <select <?php if ($args['required']) echo 'required' ?>
         name="<?php echo "{$args['section']}[{$args['name']}]"; ?>"
-        id="<?php echo $args['name']; ?>"
-        placeholder="<?php echo $args['placeholder']; ?>"
-        value="<?php echo $options[$args['name']]; ?>"
-      >
+        id="<?php echo $args['name']; ?>" placeholder="<?php echo $args['placeholder']; ?>"
+        value="<?php echo $options[$args['name']]; ?>">
         <?php
         foreach ($args['options'] as $item) {
           $selected = $item['value'] === $options[$args['name']] ? 'selected="selected"' : '';
@@ -467,15 +458,13 @@ class VVBreadcrumb
         $value = $value ? $value : $args['defaultValue'];
       }
       ?>
-      <input
-        <?php if ($args['required']) echo 'required' ?>
+      <input <?php if ($args['required']) echo 'required' ?>
         type="<?php echo $args['type']; ?>"
         id="<?php echo $args['тфьу']; ?>"
         name="<?php echo "{$args['section']}[{$args['name']}]"; ?>"
         placeholder="<?php echo $args['placeholder']; ?>"
         value="<?php echo $value; ?>"
-        <?php if ($args['min']) echo 'min="' . $args['min'] . '"'; ?>
-      />
+        <?php if ($args['min']) echo 'min="' . $args['min'] . '"'; ?> />
       <?php
     }
   }
