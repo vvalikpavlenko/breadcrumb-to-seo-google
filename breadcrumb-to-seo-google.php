@@ -5,7 +5,7 @@
  * Plugin URI:  hhttps://github.com/vvalikpavlenko/breadcrumb-to-seo-google
  * Author:      Valentyn Pavlenko
  * Author URI:  https://valik.pavlenko.org.ua/
- * Version:     1.3.1
+ * Version:     1.3.2
  * License: GPLv2 or later
  * Text Domain: vvBreadcrumbToSEO
  * Requires PHP: 7.4
@@ -36,7 +36,7 @@ defined('ABSPATH') || exit;
 class_exists('VVBreadcrumb') || exit;
 
 if (!defined('VVBREADCRUMB_VER')) {
-  define('VVBREADCRUMB_VER', '1.3.1');
+  define('VVBREADCRUMB_VER', '1.3.2');
 }
 
 // Define Directory PATH
@@ -188,20 +188,28 @@ class VVBreadcrumb
     return sprintf($str_link, $name, $positionIndex);
   }
 
-  public function add_link($name, $positionIndex, $link)
+  public function add_link($name, $positionIndex, $link, $title, $type_page_home)
   {
-    $str_link = '<a href="%1$s" itemprop="item" title="%2$s"><span itemprop="name">%2$s</span></a><meta itemprop="position" content="%3$s" />';
+    $str_link = '<a href="%1$s" itemprop="item" title="%2$s">';
+    if ($type_page_home =='icon') {
+      $str_link .= '<span style="display: none" itemprop="name">%2$s</span>';
+      $str_link .= '<span>%3$s</span>';
+    } else {
+      $str_link .= '<span itemprop="name">%3$s</span>';
+    }
+    $str_link .= '</a><meta itemprop="position" content="%4$s" />';
 
-    return sprintf($str_link, $link, $name, $positionIndex);
+
+    return sprintf($str_link, $link, $title ? $title : $name, $name, $positionIndex);
   }
 
-  public function add_list($name, $positionIndex, $link = false, $class = false)
+  public function add_list($name, $positionIndex, $link = false, $class = false, $attribute_name = false, $type_page_home = false)
   {
     $list = '<li itemprop="itemListElement" class="vp-breadcrumb__item" itemscope itemtype="https://schema.org/ListItem"';
-    $list .= 'name="' . $name . '"';
+
     $list .= $class ? 'class="vv-breadcrumb__item ' . $class . '">' : 'class="vv-breadcrumb__item">';
 
-    $list .= $link ? $this->add_link($name, $positionIndex, $link) : $this->add_name($name, $positionIndex);
+    $list .= $link ? $this->add_link($name, $positionIndex, $link, $attribute_name, $type_page_home) : $this->add_name($name, $positionIndex);
 
     $list .= '</li>';
 
@@ -229,9 +237,9 @@ class VVBreadcrumb
     }
     // Front page
     if (is_front_page()) {
-      $breadcrumb .= $this->add_list($home_name, $positionIndex);
+      $breadcrumb .= $this->add_list($home_name, $positionIndex, false, false, get_bloginfo('name'), $type_page_home);
     } else {
-      $breadcrumb .= $this->add_list($home_name, $positionIndex, home_url());
+      $breadcrumb .= $this->add_list($home_name, $positionIndex, home_url(), false, get_bloginfo('name'), $type_page_home);
     }
     $positionIndex++;
 
