@@ -198,7 +198,7 @@ class VVBreadcrumb
   public function add_list($name, $positionIndex, $link = false, $class = false)
   {
     $list = '<li itemprop="itemListElement" class="vp-breadcrumb__item" itemscope itemtype="https://schema.org/ListItem"';
-
+    $list .= 'name="' . $name . '"';
     $list .= $class ? 'class="vv-breadcrumb__item ' . $class . '">' : 'class="vv-breadcrumb__item">';
 
     $list .= $link ? $this->add_link($name, $positionIndex, $link) : $this->add_name($name, $positionIndex);
