@@ -66,8 +66,8 @@ class VVBreadcrumb
   public function add_custom_menu()
   {
     add_menu_page(
-      esc_html__('Breadcrumb', 'xProductSettings'),
-      esc_html__('Breadcrumb', 'xProductSettings'),
+      esc_html__('Breadcrumb', 'vvBreadcrumbToSEO'),
+      esc_html__('Breadcrumb', 'vvBreadcrumbToSEO'),
       'manage_options',
       'setting_breadcrumb_to_seo',
       [$this, 'setting_breadcrumb_page'],
@@ -104,7 +104,7 @@ class VVBreadcrumb
 
     add_settings_section(
       $id_options,
-      esc_html__('Settings', 'xProductSettings'),
+      esc_html__('Settings', 'vvBreadcrumbToSEO'),
       [$this, 'settings_section_html'],
       $page
     );
