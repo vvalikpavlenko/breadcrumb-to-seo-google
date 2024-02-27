@@ -4,7 +4,7 @@
  * Description: Plugin for Breadcrumbs, with SEO attributes
  * Plugin URI:  hhttps://github.com/vvalikpavlenko/breadcrumb-to-seo-google
  * Author:      Valentyn Pavlenko
- * Author URI:  https://valik.pavlenko.org.ua/
+ * Author URI:  https://valik.pavlenko.com.ua/
  * Version:     1.3.2
  * License: GPLv2 or later
  * Text Domain: vvBreadcrumbToSEO
