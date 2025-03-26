@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Plugin Name: Breadcrumb to SEO Google
  * Description: Plugin for Breadcrumbs, with SEO attributes
  * Plugin URI:  hhttps://github.com/vvalikpavlenko/breadcrumb-to-seo-google
  * Author:      Valentyn Pavlenko
  * Author URI:  https://valik.pavlenko.com.ua/
- * Version:     1.3.2
+ * Version:     1.3.3
  * License: GPLv2 or later
  * Text Domain: vvBreadcrumbToSEO
  * Requires PHP: 7.4
@@ -191,7 +192,7 @@ class VVBreadcrumb
   public function add_link($name, $positionIndex, $link, $title, $type_page_home)
   {
     $str_link = '<a href="%1$s" itemprop="item" title="%2$s">';
-    if ($type_page_home =='icon') {
+    if ($type_page_home == 'icon') {
       $str_link .= '<span style="display: none" itemprop="name">%2$s</span>';
       $str_link .= '<span>%3$s</span>';
     } else {
@@ -205,7 +206,10 @@ class VVBreadcrumb
 
   public function add_list($name, $positionIndex, $link = false, $class = false, $attribute_name = false, $type_page_home = false)
   {
-    $list = '<li itemprop="itemListElement" class="vp-breadcrumb__item" itemscope itemtype="https://schema.org/ListItem"';
+    $options = get_option('breadcrumb_setting_options');
+    $className = $options['styles_class'];
+
+    $list = '<li itemprop="itemListElement" class="vp-breadcrumb__item ' . ($className ? $className . '_item' : '') . '" itemscope itemtype="https://schema.org/ListItem"';
 
     $list .= $class ? 'class="vv-breadcrumb__item ' . $class . '">' : 'class="vv-breadcrumb__item">';
 
@@ -224,8 +228,9 @@ class VVBreadcrumb
     $text_domain = $theme->get('TextDomain');
     $options = get_option('breadcrumb_setting_options');
     $type_page_home = $options['type_page_home'];
+    $className = $options['styles_class'];
     // Open list
-    $breadcrumb = '<ul itemscope itemtype="https://schema.org/BreadcrumbList" id="breadcrumb" class="vp-breadcrumb">';
+    $breadcrumb = '<ul itemscope itemtype="https://schema.org/BreadcrumbList" id="breadcrumb" class="vp-breadcrumb ' . $className . '">';
     $home_name = get_bloginfo('name');
     switch ($type_page_home) {
       case 'icon':
@@ -440,14 +445,14 @@ class VVBreadcrumb
   {
     $options = get_option($args['section']);
     if ($args['type'] == 'checkbox') {
-      ?>
+?>
       <input type="checkbox" <?php if ($args['required']) echo 'required' ?> id="<?php echo $args['name']; ?>"
-             name="<?php echo "{$args['section']}[{$args['name']}]"; ?>"
-             placeholder="<?php echo $args['placeholder']; ?>"
-             value="<?php echo $args['value']; ?>" <?php echo checked($args['value'], $options[$args['name']], false); ?> />
-      <?php
+        name="<?php echo "{$args['section']}[{$args['name']}]"; ?>"
+        placeholder="<?php echo $args['placeholder']; ?>"
+        value="<?php echo $args['value']; ?>" <?php echo checked($args['value'], $options[$args['name']], false); ?> />
+    <?php
     } elseif ($args['type'] == 'select') {
-      ?>
+    ?>
       <select <?php if ($args['required']) echo 'required' ?>
         name="<?php echo "{$args['section']}[{$args['name']}]"; ?>"
         id="<?php echo $args['name']; ?>" placeholder="<?php echo $args['placeholder']; ?>"
@@ -459,13 +464,13 @@ class VVBreadcrumb
         }
         ?>
       </select>
-      <?php
+    <?php
     } else {
       $value = $options[$args['name']];
       if ($args['required']) {
         $value = $value ? $value : $args['defaultValue'];
       }
-      ?>
+    ?>
       <input <?php if ($args['required']) echo 'required' ?>
         type="<?php echo $args['type']; ?>"
         id="<?php echo $args['тфьу']; ?>"
@@ -473,7 +478,7 @@ class VVBreadcrumb
         placeholder="<?php echo $args['placeholder']; ?>"
         value="<?php echo $value; ?>"
         <?php if ($args['min']) echo 'min="' . $args['min'] . '"'; ?> />
-      <?php
+<?php
     }
   }
 }
