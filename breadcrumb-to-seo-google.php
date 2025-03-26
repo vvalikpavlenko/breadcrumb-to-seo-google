@@ -49,6 +49,20 @@ if (!defined('VVBREADCRUMB_DIR_PATH')) {
 class VVBreadcrumb
 {
   public $icon_home = "<svg width='24' viewBox='0 0 24 24' fill='currentColor' xmlns='http://www.w3.org/2000/svg'><path d='M11.9998 3.26318L1.26318 12.6253H4.48421V20.9474H9.85276V14.706H14.1473V20.9474H19.5158V12.6253H22.7369L11.9998 3.26318Z'/></svg>";
+  public $icon_home_outline = "<svg viewBox='0 0 16 16'
+     fill='none'
+     stroke='currentColor'
+     xmlns='http://www.w3.org/2000/svg'>
+  <path d='M1.14258 8L7.99972 1.14285L14.8569 8'
+        stroke-width='1.14286'
+        stroke-linecap='round'
+        stroke-linejoin='round' />
+  <path d='M2.66602 6.47618V12.5714C2.66602 12.7735 2.74629 12.9673 2.88917 13.1102C3.03206 13.2531 3.22585 13.3333 3.42792 13.3333H5.71363C5.9157 13.3333 6.1095 13.2531 6.25238 13.1102C6.39527 12.9673 6.47554 12.7735 6.47554 12.5714V9.5238C6.47554 9.32173 6.55581 9.12794 6.6987 8.98505C6.84158 8.84217 7.03537 8.7619 7.23744 8.7619H8.76125C8.96332 8.7619 9.15712 8.84217 9.3 8.98505C9.44289 9.12794 9.52316 9.32173 9.52316 9.5238V12.5714C9.52316 12.7735 9.60343 12.9673 9.74632 13.1102C9.8892 13.2531 10.083 13.3333 10.2851 13.3333H12.5708C12.7728 13.3333 12.9666 13.2531 13.1095 13.1102C13.2524 12.9673 13.3327 12.7735 13.3327 12.5714V6.47618'
+        stroke-width='1.14286'
+        stroke-linecap='round'
+        stroke-linejoin='round' />
+</svg>
+";
 
   public function register()
   {
@@ -159,6 +173,10 @@ class VVBreadcrumb
           [
             'value' => 'icon',
             'label' => esc_html__('Icon home', 'vvBreadcrumbToSEO')
+          ],
+          [
+            'value' => 'icon-outline',
+            'label' => esc_html__('Icon home outline', 'vvBreadcrumbToSEO')
           ]
         ]
       ]
@@ -191,7 +209,10 @@ class VVBreadcrumb
 
   public function add_link($name, $positionIndex, $link, $title, $type_page_home)
   {
-    $str_link = '<a href="%1$s" itemprop="item" title="%2$s">';
+    $options = get_option('breadcrumb_setting_options');
+    $className = $options['styles_class'];
+
+    $str_link = '<a href="%1$s" itemprop="item" title="%2$s" class="vp-breadcrumb__link ' . ($className ? $className . '_link' : '') . '">';
     if ($type_page_home == 'icon') {
       $str_link .= '<span style="display: none" itemprop="name">%2$s</span>';
       $str_link .= '<span>%3$s</span>';
@@ -235,6 +256,9 @@ class VVBreadcrumb
     switch ($type_page_home) {
       case 'icon':
         $home_name = $this->icon_home;
+        break;
+      case 'icon-outline':
+        $home_name = $this->icon_home_outline;
         break;
       case 'text':
         $home_name = $options['title_home'];
