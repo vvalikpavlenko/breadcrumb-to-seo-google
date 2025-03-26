@@ -212,7 +212,7 @@ class VVBreadcrumb
     $options = get_option('breadcrumb_setting_options');
     $className = $options['styles_class'];
 
-    $str_link = '<a href="%1$s" itemprop="item" title="%2$s" class="vp-breadcrumb__link ' . ($className ? $className . '_link' : '') . '">';
+    $str_link = '<a href="%1$s" itemprop="item" title="%2$s" class="vp-breadcrumb__link ' . ($className ? $className . '__link' : '') . '">';
     if ($type_page_home == 'icon') {
       $str_link .= '<span style="display: none" itemprop="name">%2$s</span>';
       $str_link .= '<span>%3$s</span>';
@@ -230,7 +230,7 @@ class VVBreadcrumb
     $options = get_option('breadcrumb_setting_options');
     $className = $options['styles_class'];
 
-    $list = '<li itemprop="itemListElement" class="vp-breadcrumb__item ' . ($className ? $className . '_item' : '') . '" itemscope itemtype="https://schema.org/ListItem"';
+    $list = '<li itemprop="itemListElement" class="vp-breadcrumb__item ' . ($className ? $className . '__item' : '') . '" itemscope itemtype="https://schema.org/ListItem"';
 
     $list .= $class ? 'class="vv-breadcrumb__item ' . $class . '">' : 'class="vv-breadcrumb__item">';
 
