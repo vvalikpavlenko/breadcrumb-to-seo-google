@@ -244,14 +244,14 @@ class VVBreadcrumb
   public function get_breadcrumb()
   {
     $positionIndex = 1;
-    // Get text domain for translations
-    $theme = wp_get_theme();
-    $text_domain = $theme->get('TextDomain');
     $options = get_option('breadcrumb_setting_options');
-    $type_page_home = $options['type_page_home'];
-    $className = $options['styles_class'];
-    // Open list
-    $breadcrumb = '<ul itemscope itemtype="https://schema.org/BreadcrumbList" id="breadcrumb" class="vp-breadcrumb ' . $className . '">';
+    $type_page_home = isset($options['type_page_home']) ? $options['type_page_home'] : 'home';
+    $className = isset($options['styles_class']) ? $options['styles_class'] : '';
+
+    // Відкриття списку breadcrumbs
+    $breadcrumb = '<ul itemscope itemtype="https://schema.org/BreadcrumbList" id="breadcrumb" class="vp-breadcrumb ' . esc_attr($className) . '">';
+
+    // Домашня сторінка: вибір назви (текст, іконка тощо)
     $home_name = get_bloginfo('name');
     switch ($type_page_home) {
       case 'icon':
@@ -261,10 +261,11 @@ class VVBreadcrumb
         $home_name = $this->icon_home_outline;
         break;
       case 'text':
-        $home_name = $options['title_home'];
+        $home_name = isset($options['title_home']) ? $options['title_home'] : $home_name;
         break;
     }
-    // Front page
+
+    // Вивід першого елемента – домашньої сторінки
     if (is_front_page()) {
       $breadcrumb .= $this->add_list($home_name, $positionIndex, false, false, get_bloginfo('name'), $type_page_home);
     } else {
@@ -272,11 +273,39 @@ class VVBreadcrumb
     }
     $positionIndex++;
 
-    // Category, tag, author and date archives
-    if (is_archive() && !is_tax() && !is_post_type_archive()) {
+    // Якщо відкрита сторінка архіву категорії товарів WooCommerce
+    if (is_tax('product_cat')) {
+      $current_term = get_queried_object();
+      if ($current_term && ! is_wp_error($current_term)) {
+        $breadcrumb .= $this->add_list(
+          $current_term->name,
+          $positionIndex++,
+          get_term_link($current_term->term_id, 'product_cat'),
+          'is-active'
+        );
+      }
+    }
+    // Якщо відкрито сторінку товару WooCommerce
+    else if (is_singular('product')) {
+      $product_id = get_the_ID();
+      $terms = get_the_terms($product_id, 'product_cat');
 
-      // Title of archive
-      if (is_category() or is_tag()) {
+      if (! empty($terms) && ! is_wp_error($terms)) {
+        // Вибираємо першу категорію (головну)
+        $main_term = reset($terms);
+        $breadcrumb .= $this->add_list(
+          $main_term->name,
+          $positionIndex++,
+          get_term_link($main_term->term_id, 'product_cat')
+        );
+      }
+
+      // Додаємо назву товару
+      $breadcrumb .= $this->add_list(get_the_title(), $positionIndex++, false, 'is-active');
+    }
+    // Інші умови для архівів, записів, сторінок тощо
+    else if (is_archive() && ! is_tax() && ! is_post_type_archive()) {
+      if (is_category() || is_tag()) {
         $breadcrumb .= $this->add_list(single_cat_title('', false), $positionIndex++);
       } else if (is_author()) {
         $breadcrumb .= $this->add_list(get_the_author(), $positionIndex++);
@@ -289,174 +318,39 @@ class VVBreadcrumb
           $breadcrumb .= $this->add_list(get_the_time('Y'), $positionIndex++);
         }
       }
-    } // Posts
+    }
+    // Для записів (блогових статей)
     else if (is_singular('post')) {
-
-      // Post categories
       $post_cats = get_the_category();
-
-      if ($post_cats[0]) {
+      if (! empty($post_cats)) {
         $breadcrumb .= $this->add_list($post_cats[0]->name, $positionIndex, get_category_link($post_cats[0]->term_id));
         $positionIndex++;
       }
-
-      // Post title
       $breadcrumb .= $this->add_list(get_the_title(), $positionIndex, false, 'is-active');
       $positionIndex++;
-    } // Pages
-    else if (is_page() && !is_front_page()) {
+    }
+    // Для сторінок
+    else if (is_page() && ! is_front_page()) {
       $post = get_post(get_the_ID());
-
-      // Page parents
       if ($post->post_parent) {
         $parent_id = $post->post_parent;
         $crumbs = [];
-
         while ($parent_id) {
           $page = get_page($parent_id);
           $crumbs[] = $this->add_list(get_the_title($page->ID), $positionIndex++, get_permalink($page->ID));
           $parent_id = $page->post_parent;
         }
-
         $crumbs = array_reverse($crumbs);
-
         foreach ($crumbs as $crumb) {
           $breadcrumb .= $crumb;
         }
       }
-
-      // Page title
       $breadcrumb .= $this->add_list(get_the_title(), $positionIndex++, false, 'is-active');
     }
 
-    // Attachments
-    if (is_attachment()) {
-      // Attachment parent
-      $post = get_post(get_the_ID());
-
-      if ($post->post_parent) {
-        $breadcrumb .= $this->add_list(get_the_title($post->post_parent), $positionIndex++, get_permalink($post->post_parent));
-      }
-
-      // Attachment title
-      $breadcrumb .= $this->add_list(get_the_title(), $positionIndex++, false, 'is-active');
-    }
-
-    // Search
-    if (is_search()) {
-      $breadcrumb .= $this->add_list(__('Search', $text_domain), $positionIndex++, false, 'is-active');;
-    }
-
-    // 404
-    if (is_404()) {
-      $breadcrumb .= $this->add_list(__('404', $text_domain), $positionIndex++, false, 'is-active');
-    }
-
-    // Custom Post Type Archive
-    if (is_post_type_archive()) {
-      $breadcrumb .= $this->add_list(post_type_archive_title('', false), $positionIndex++, false, 'is-active');
-    }
-
-    // Custom Taxonomies
-    if (is_tax()) {
-      // Get the post types the taxonomy is attached to
-      $current_term = get_queried_object();
-
-      $attached_to = [];
-      $post_types = get_post_types();
-
-      foreach ($post_types as $post_type) {
-        $taxonomies = get_object_taxonomies($post_type);
-
-        if (in_array($current_term->taxonomy, $taxonomies)) {
-          $attached_to[] = $post_type;
-        }
-      }
-
-      // Post type archive link
-      $output = false;
-
-      foreach ($attached_to as $post_type) {
-        $cpt_obj = get_post_type_object($post_type);
-
-        if (!$output && get_post_type_archive_link($cpt_obj->name)) {
-          $breadcrumb .= $this->add_list($cpt_obj->labels->name, $positionIndex++, get_post_type_archive_link($cpt_obj->name));
-          $output = true;
-        }
-      }
-
-      // Term title
-      $breadcrumb .= $this->add_list(single_term_title('', false), $positionIndex++, false, 'is-active');
-    }
-
-    // Custom Post Types
-    if (is_single() && get_post_type() != 'post' && get_post_type() != 'attachment') {
-      $cpt_obj = get_post_type_object(get_post_type());
-
-      // Is cpt hierarchical like pages or posts?
-      if (is_post_type_hierarchical($cpt_obj->name)) {
-        // Like pages
-
-        // Cpt archive
-        if (get_post_type_archive_link($cpt_obj->name)) {
-          $breadcrumb .= $this->add_list($cpt_obj->labels->name, $positionIndex++, get_post_type_archive_link($cpt_obj->name));
-        }
-
-        // Cpt parents
-        $post = get_post(get_the_ID());
-
-        if ($post->post_parent) {
-          $parent_id = $post->post_parent;
-          $crumbs = [];
-
-          while ($parent_id) {
-            $page = get_page($parent_id);
-            $crumbs[] = $this->add_list(get_the_title($page->ID), $positionIndex++, get_permalink($page->ID));
-            $parent_id = $page->post_parent;
-          }
-
-          $crumbs = array_reverse($crumbs);
-
-          foreach ($crumbs as $crumb) {
-            $breadcrumb .= $this->add_list($crumb, $positionIndex++);
-          }
-        }
-      } else {
-        // Like posts
-
-        // Cpt archive
-        if (get_post_type_archive_link($cpt_obj->name)) {
-          $breadcrumb .= $this->add_list($cpt_obj->labels->name, $positionIndex, get_post_type_archive_link($cpt_obj->name));
-        }
-
-        // Get cpt taxonomies
-        $cpt_taxes = get_object_taxonomies($cpt_obj->name);
-
-        if ($cpt_taxes && is_taxonomy_hierarchical($cpt_taxes[0])) {
-          // Other taxes attached to the cpt could be hierachical, so need to look into that.
-          $cpt_terms = get_the_terms(get_the_ID(), $cpt_taxes[0]);
-
-          if (is_array($cpt_terms)) {
-            $output = false;
-
-            foreach ($cpt_terms as $cpt_term) {
-              if (!$output) {
-                $breadcrumb .= $this->add_list($cpt_term->name, $positionIndex++, get_term_link($cpt_term->term_taxonomy_id));
-                $output = true;
-              }
-            }
-          }
-        }
-      }
-
-      // Cpt title
-      $breadcrumb .= $this->add_list(get_the_title(), $positionIndex, false, 'is-active');
-    }
-
-    // Close list
+    // Закриття списку
     $breadcrumb .= '</ul>';
 
-    // Ouput
     echo $breadcrumb;
   }
 
